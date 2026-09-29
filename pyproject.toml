@@ -13,7 +13,7 @@ dependencies = []
 keywords = ["mcp", "model-context-protocol", "mcp-apps", "sep-1865", "lint", "preview"]
 
 [project.optional-dependencies]
-example = ["mcp>=1.26; python_version >= '3.10'"]
+example = ["mcp>=1.26,<2; python_version >= '3.10'"]
 
 [project.scripts]
 mcp-apps-preview = "mcp_apps_preview.__main__:main"

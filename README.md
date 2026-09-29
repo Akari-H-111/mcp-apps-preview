@@ -38,7 +38,7 @@ mcp-apps-preview serve --url http://127.0.0.1:8000/mcp --open
 `serve` opens http://127.0.0.1:8790. Views load from `http://localhost:8790`,
 which is a different origin, as the spec requires for web hosts.
 
-Try the bundled example (needs `pip install "mcp>=1.26"`):
+Try the bundled example (FastMCP from the MCP Python SDK 1.x: `pip install "mcp>=1.26,<2"`):
 
 ```bash
 python examples/dice_server.py &

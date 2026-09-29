@@ -1,6 +1,6 @@
 """A tiny MCP Apps server: roll dice, see the result in an interactive view.
 
-    pip install "mcp>=1.26"
+    pip install "mcp>=1.26,<2"
     python examples/dice_server.py            # Streamable HTTP on http://127.0.0.1:8001/mcp
     python examples/dice_server.py --stdio    # for desktop hosts
     mcp-apps-preview serve --url http://127.0.0.1:8001/mcp --open
