@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP Apps sandbox proxy</title>
+<style>html,body{margin:0;padding:0;background:transparent;height:100%;overflow:hidden}iframe{border:0;width:100%;height:100vh;display:block}</style>
+</head>
+<body>
+<script>
+'use strict';
+// Static MCP Apps sandbox proxy (SEP-1865 "Sandbox proxy"), usable by any web host:
+// 1. served from an origin different from the host page;
+// 2. announces ui/notifications/sandbox-proxy-ready;
+// 3. on ui/notifications/sandbox-resource-ready, loads the view HTML in an inner
+//    sandboxed srcdoc frame with the declared CSP injected as a <meta> tag;
+// 4. forwards every other JSON-RPC message both ways (never sandbox-* ones).
+// The inner view fills this frame; the host sizes this frame (fixed or from size-changed).
+(function () {
+  const hostOrigin = document.referrer ? new URL(document.referrer).origin : null;
+  let inner = null;
+  const originList = (csp, key, re) => (csp && Array.isArray(csp[key]) ? csp[key].filter(v => re.test(v)).join(' ') : '');
+  function policy(csp) {
+    const web = /^https:\/\/(\*\.)?[\w.-]+(:\d+)?$/, sockets = /^(https|wss):\/\/(\*\.)?[\w.-]+(:\d+)?$/;
+    const res = originList(csp, 'resourceDomains', web), conn = originList(csp, 'connectDomains', sockets);
+    const frames = originList(csp, 'frameDomains', web), base = originList(csp, 'baseUriDomains', web);
+    return ["default-src 'none'", `script-src 'unsafe-inline' ${res}`, `style-src 'unsafe-inline' ${res}`,
+      `img-src data: ${res}`, `font-src ${res || "'none'"}`, `media-src data: ${res}`, `connect-src ${conn || "'none'"}`,
+      `frame-src ${frames || "'none'"}`, "object-src 'none'", `base-uri ${base || "'none'"}`, "form-action 'none'"].join('; ');
+  }
+  const ALLOW = {camera: 'camera', microphone: 'microphone', geolocation: 'geolocation', clipboardWrite: 'clipboard-write'};
+  function load(params) {
+    if (inner || typeof params.html !== 'string') return;
+    const meta = `<meta http-equiv="Content-Security-Policy" content="${policy(params.csp).replace(/"/g, '&quot;')}">`;
+    const html = /<head[^>]*>/i.test(params.html) ? params.html.replace(/<head[^>]*>/i, m => m + meta) : meta + params.html;
+    inner = document.createElement('iframe');
+    inner.setAttribute('sandbox', typeof params.sandbox === 'string' ? params.sandbox.replace(/allow-same-origin/g, '') : 'allow-scripts');
+    const allow = Object.keys(params.permissions || {}).map(k => ALLOW[k]).filter(Boolean);
+    if (allow.length) inner.setAttribute('allow', allow.join('; '));
+    inner.setAttribute('title', 'MCP App view');
+    inner.srcdoc = html;
+    document.body.append(inner);
+  }
+  window.addEventListener('message', event => {
+    const msg = event.data;
+    if (!msg || msg.jsonrpc !== '2.0') return;
+    if (event.source === window.parent) {
+      if (hostOrigin && event.origin !== hostOrigin) return;
+      if (msg.method === 'ui/notifications/sandbox-resource-ready') { load(msg.params || {}); return; }
+      if (inner) inner.contentWindow.postMessage(msg, '*');
+    } else if (inner && event.source === inner.contentWindow) {
+      if (typeof msg.method === 'string' && msg.method.startsWith('ui/notifications/sandbox-')) return;
+      window.parent.postMessage(msg, hostOrigin || '*');
+    }
+  });
+  window.parent.postMessage({jsonrpc: '2.0', method: 'ui/notifications/sandbox-proxy-ready', params: {}}, hostOrigin || '*');
+})();
+</script>
+</body>
+</html>

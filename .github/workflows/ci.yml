@@ -1,0 +1,35 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install .
+      - run: python -B -m unittest discover -s tests -v
+
+  example:
+    # Lint the bundled FastMCP example over real Streamable HTTP.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[example]'
+      - run: |
+          python examples/dice_server.py &
+          for i in $(seq 1 50); do curl -s -o /dev/null http://127.0.0.1:8001/mcp -X POST && break; sleep 0.2; done
+          mcp-apps-preview lint --url http://127.0.0.1:8001/mcp --call roll '{"sides": 20}'

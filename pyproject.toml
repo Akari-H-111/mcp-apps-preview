@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-apps-preview"
+version = "0.1.0"
+description = "Preview and lint MCP Apps (SEP-1865) from any MCP server: no Node build, no CDN, no chat-host account."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = []
+keywords = ["mcp", "model-context-protocol", "mcp-apps", "sep-1865", "lint", "preview"]
+
+[project.optional-dependencies]
+example = ["mcp>=1.26; python_version >= '3.10'"]
+
+[project.scripts]
+mcp-apps-preview = "mcp_apps_preview.__main__:main"
+
+[tool.setuptools]
+packages = ["mcp_apps_preview"]
+
+[tool.setuptools.package-data]
+mcp_apps_preview = ["web/*.html", "web/*.css", "web/*.js"]

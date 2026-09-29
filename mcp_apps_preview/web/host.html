@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCP Apps Preview</title>
+<link rel="stylesheet" href="/host.css">
+<script src="/host.js" defer></script>
+</head>
+<body>
+<header>
+  <div><b>MCP Apps Preview</b> <span id="server" class="muted">connecting…</span></div>
+  <div class="controls">
+    <label>Container
+      <select id="preset">
+        <option value="chat">Chat · 720 wide, flexible height</option>
+        <option value="display">Smart display · 960×540 fixed</option>
+        <option value="phone">Phone · 390 wide, flexible</option>
+      </select>
+    </label>
+    <label>Theme <select id="theme"><option value="light">light</option><option value="dark">dark</option></select></label>
+  </div>
+</header>
+<main>
+  <aside class="tools">
+    <h2>Tools</h2>
+    <ul id="tools"></ul>
+    <form id="call-form" hidden>
+      <h3 id="tool-name"></h3>
+      <p id="tool-desc" class="muted"></p>
+      <label for="args">Arguments (JSON)</label>
+      <textarea id="args" spellcheck="false" rows="10"></textarea>
+      <button type="submit">Call as the agent</button>
+      <p id="call-status" class="muted" role="status"></p>
+    </form>
+  </aside>
+  <section class="stage">
+    <div id="frame-box" class="frame-box chat"><p class="muted empty">Call a tool that declares <code>_meta.ui.resourceUri</code> to render its view.</p></div>
+  </section>
+  <aside class="log">
+    <div class="tabs"><button id="tab-log" class="on">Messages</button><button id="tab-lint">Lint</button><button id="tab-result">Result</button></div>
+    <ol id="log" class="panel" aria-live="polite"></ol>
+    <div id="lint" class="panel" hidden></div>
+    <pre id="result" class="panel" hidden></pre>
+  </aside>
+</main>
+</body>
+</html>
